@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -8,6 +8,7 @@ import {
   Check,
   ChevronRight,
   FileText,
+  FileUp,
   Folder,
   FolderOpen,
   Gauge,
@@ -18,6 +19,8 @@ import {
   Menu,
   Moon,
   Plus,
+  Pencil,
+  Save,
   Search,
   Settings2,
   Sparkles,
@@ -201,10 +204,9 @@ function IntroPage({ theme, onOpenDemo, onToggleTheme }: { theme: Theme; onOpenD
           <div className="preview-body">
             <aside className="preview-rail">
               <div className="preview-brand"><BrandMark /><span>Vault</span></div>
-              <span className="preview-nav-line active" />
-              <span className="preview-nav-line" />
-              <span className="preview-nav-line short" />
-              <span className="preview-nav-line" />
+              <div className="preview-nav-item active"><BookOpen size={12} /> Study desk</div>
+              <div className="preview-nav-item"><FileText size={12} /> Notes</div>
+              <div className="preview-nav-item"><Layers3 size={12} /> Instruments</div>
               <div className="preview-tree-line"><span /> source</div>
               <div className="preview-tree-line"><span /> notes</div>
               <div className="preview-tree-line"><span /> instruments</div>
@@ -213,7 +215,6 @@ function IntroPage({ theme, onOpenDemo, onToggleTheme }: { theme: Theme; onOpenD
               <div className="preview-breadcrumb">Sources <ChevronRight size={12} /> The practice of retrieval</div>
               <h2>The practice of retrieval</h2>
               <p className="preview-subtitle">A source becomes useful when it changes what you can do without it.</p>
-              <div className="preview-rule" />
               <p>Retrieval asks memory to bring an idea forward before the answer is visible.</p>
               <p>That small effort reveals the gap and gives the next review a purpose.</p>
               <div className="preview-assistant">
@@ -354,6 +355,7 @@ function WorkspacePage({
   const [showAddSource, setShowAddSource] = useState(false);
   const [newSourceTitle, setNewSourceTitle] = useState("");
   const [newSourceBody, setNewSourceBody] = useState("");
+  const importSourceRef = useRef<HTMLInputElement>(null);
 
   const selectedSource = useMemo(
     () => state.sources.find((source) => source.id === selectedSourceId) ?? state.sources[0],
@@ -445,6 +447,67 @@ function WorkspacePage({
     setNotice("Source added to your vault.");
   }
 
+  async function importSourceFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (!extension || !["md", "markdown", "txt"].includes(extension)) {
+      setNotice("Import Markdown or plain-text files only.");
+      return;
+    }
+    const body = (await file.text()).trim();
+    if (!body) {
+      setNotice("That file does not contain any text to import.");
+      return;
+    }
+    const title = file.name.replace(/\.(md|markdown|txt)$/i, "") || "Imported source";
+    const safeName = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "imported-source";
+    const source: Source = {
+      id: makeId("source"),
+      title,
+      path: `sources/${safeName}.md`,
+      kind: "text",
+      body,
+      createdAt: new Date().toISOString(),
+    };
+    setState((current) => ({ ...current, sources: [source, ...current.sources] }));
+    setSelectedSourceId(source.id);
+    setView("source");
+    setNotice(`Imported ${file.name} as a source.`);
+  }
+
+  function createNote() {
+    const now = new Date().toISOString();
+    const note: Note = {
+      id: makeId("note"),
+      title: "Untitled note",
+      body: "# Untitled note\n\n",
+      sourceIds: selectedSource ? [selectedSource.id] : [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    setState((current) => ({ ...current, notes: [note, ...current.notes] }));
+    setSelectedNoteId(note.id);
+    setView("notes");
+    setNotice("New Markdown note created.");
+  }
+
+  function saveNote(id: string, title: string, body: string): boolean {
+    const nextTitle = title.trim();
+    const nextBody = body.trim();
+    if (!nextTitle || !nextBody) {
+      setNotice("A note needs a title and Markdown content.");
+      return false;
+    }
+    setState((current) => ({
+      ...current,
+      notes: current.notes.map((note) => note.id === id ? { ...note, title: nextTitle, body: nextBody, updatedAt: new Date().toISOString() } : note),
+    }));
+    setNotice("Markdown note saved locally.");
+    return true;
+  }
+
   return (
     <main className="workspace-page">
       <header className="workspace-topbar">
@@ -501,7 +564,11 @@ function WorkspacePage({
             <>
               <div className="document-toolbar">
                 <div><p className="eyebrow">Source</p><h1>{selectedSource.title}</h1><span className="document-path">{selectedSource.path}</span></div>
-                <button className="quiet-button" type="button" onClick={() => setShowAddSource((current) => !current)}><Plus size={16} /> Add source</button>
+                <div className="document-toolbar-actions">
+                  <input ref={importSourceRef} className="visually-hidden" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" onChange={importSourceFile} />
+                  <button className="quiet-button" type="button" onClick={() => importSourceRef.current?.click()}><FileUp size={16} /> Import file</button>
+                  <button className="quiet-button" type="button" onClick={() => setShowAddSource((current) => !current)}><Plus size={16} /> Add source</button>
+                </div>
               </div>
               {showAddSource && (
                 <form className="add-source-form" onSubmit={addSource}>
@@ -529,7 +596,7 @@ function WorkspacePage({
               />
             </>
           ) : view === "notes" ? (
-            <NotesView notes={state.notes} selectedNote={selectedNote} onSelect={setSelectedNoteId} onBackToSource={() => setView("source")} />
+            <NotesView notes={state.notes} selectedNote={selectedNote} onSelect={setSelectedNoteId} onCreate={createNote} onSave={saveNote} onBackToSource={() => setView("source")} />
           ) : (
             <InstrumentsView studySets={state.studySets} selectedSet={selectedSet} onSelect={setSelectedSetId} onBackToSource={() => setView("source")} />
           )}
@@ -582,9 +649,26 @@ function AssistantPanel({
   );
 }
 
-function NotesView({ notes, selectedNote, onSelect, onBackToSource }: { notes: Note[]; selectedNote?: Note; onSelect: (id: string) => void; onBackToSource: () => void }) {
+function NotesView({ notes, selectedNote, onSelect, onCreate, onSave, onBackToSource }: { notes: Note[]; selectedNote?: Note; onSelect: (id: string) => void; onCreate: () => void; onSave: (id: string, title: string, body: string) => boolean; onBackToSource: () => void }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftTitle, setDraftTitle] = useState(selectedNote?.title ?? "");
+  const [draftBody, setDraftBody] = useState(selectedNote?.body ?? "");
+
+  useEffect(() => {
+    setDraftTitle(selectedNote?.title ?? "");
+    setDraftBody(selectedNote?.body ?? "");
+    setIsEditing(false);
+  }, [selectedNote?.id]);
+
   const noteBlocks = selectedNote?.body.split("\n\n").slice(1).filter((block) => !block.startsWith("_Source:")) ?? [];
-  return <div className="collection-view"><div className="document-toolbar"><div><p className="eyebrow">Notes</p><h1>What has become yours</h1><span className="document-path">Durable Markdown understanding</span></div><button className="quiet-button" type="button" onClick={onBackToSource}><ArrowLeft size={16} /> Back to source</button></div>{selectedNote ? <article className="note-reading"><div className="note-header"><span className="kind-label">Accepted note</span><span>{readableDate(selectedNote.createdAt)}</span></div><h2>{selectedNote.title}</h2>{noteBlocks.map((block) => block.startsWith("#") ? <h3 key={block}>{block.replace(/^#+\s*/, "")}</h3> : <p key={block}>{block}</p>)}<div className="reference-line"><Link2 size={14} /> Source reference attached</div></article> : notes.length ? <div className="collection-list">{notes.map((note) => <button className="collection-item" type="button" key={note.id} onClick={() => onSelect(note.id)}><span className="collection-item-icon"><FileText size={17} /></span><span><strong>{note.title}</strong><small>Accepted {readableDate(note.createdAt)}</small></span><ChevronRight size={16} /></button>)}</div> : <EmptyView icon={<Lightbulb size={20} />} title="Your first note is close" copy="Ask the assistant about the selected source, then approve the part that deserves to stay." onAction={onBackToSource} action="Return to the source" />}</div>;
+
+  function saveDraft(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedNote) return;
+    if (onSave(selectedNote.id, draftTitle, draftBody)) setIsEditing(false);
+  }
+
+  return <div className="collection-view"><div className="document-toolbar"><div><p className="eyebrow">Notes</p><h1>What has become yours</h1><span className="document-path">Durable Markdown understanding</span></div><div className="document-toolbar-actions"><button className="quiet-button" type="button" onClick={onBackToSource}><ArrowLeft size={16} /> Back to source</button><button className="primary-button small" type="button" onClick={onCreate}><Plus size={15} /> New note</button></div></div>{selectedNote ? isEditing ? <form className="note-editor" onSubmit={saveDraft}><div className="form-heading"><span><Pencil size={15} /> Edit Markdown note</span><span className="review-label">Saved locally in this browser</span></div><label>Title<input value={draftTitle} onChange={(event) => setDraftTitle(event.target.value)} /></label><label>Markdown<textarea value={draftBody} onChange={(event) => setDraftBody(event.target.value)} rows={16} /></label><div className="note-editor-actions"><button className="quiet-button" type="button" onClick={() => setIsEditing(false)}>Cancel</button><button className="primary-button small" type="submit"><Save size={15} /> Save note</button></div></form> : <article className="note-reading"><div className="note-header"><span className="kind-label">Markdown note</span><span>Updated {readableDate(selectedNote.updatedAt ?? selectedNote.createdAt)}</span><button className="quiet-button" type="button" onClick={() => setIsEditing(true)}><Pencil size={15} /> Edit</button></div><h2>{selectedNote.title}</h2>{noteBlocks.map((block) => block.startsWith("#") ? <h3 key={block}>{block.replace(/^#+\s*/, "")}</h3> : <p key={block}>{block}</p>)}<div className="reference-line"><Link2 size={14} /> {selectedNote.sourceIds.length ? "Source reference attached" : "Personal note"}</div></article> : notes.length ? <div className="collection-list">{notes.map((note) => <button className="collection-item" type="button" key={note.id} onClick={() => onSelect(note.id)}><span className="collection-item-icon"><FileText size={17} /></span><span><strong>{note.title}</strong><small>Updated {readableDate(note.updatedAt ?? note.createdAt)}</small></span><ChevronRight size={16} /></button>)}</div> : <EmptyView icon={<Lightbulb size={20} />} title="Your first note is close" copy="Create a note here, or ask the assistant about the selected source and approve a draft." onAction={onCreate} action="Create a note" />}</div>;
 }
 
 function InstrumentsView({ studySets, selectedSet, onSelect, onBackToSource }: { studySets: StudySet[]; selectedSet?: StudySet; onSelect: (id: string) => void; onBackToSource: () => void }) {

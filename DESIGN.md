@@ -28,17 +28,17 @@ The deadline MVP targets a desktop Chromium walkthrough on a normal PC. The curr
 
 ## Colors
 
-The workspace palette is implemented in OKLCH and follows the requested two-atmosphere model: Obsidian Nord's softened blue-gray dark theme and a readable Rosé Pine Dawn / AnuPpuccin-inspired light theme. The values below are the current source of truth in `src/styles.css`; they are palette anchors, not a claim of byte-for-byte theme compatibility.
+The workspace palette is implemented in OKLCH and follows the requested two-atmosphere model: a softened Nord-like dark canvas and a readable Rosé Pine Dawn / AnuPpuccin-inspired light canvas. Theme switching changes the relationship between surface and accent; it is not simply a brightness slider. The values below are the current source of truth in `src/styles.css`.
 
 ### Dark workspace: Nord-derived
 
-- **Polar Night** `oklch(0.27 0.016 255)`: softened default canvas, close to Nord's `#2e3440` without the stronger blue cast.
-- **Surface** `oklch(0.32 0.018 255)`: pane and reading surface, close to Nord's `#3b4252`.
-- **Raised surface** `oklch(0.36 0.020 255)`: selected controls and proposal surfaces.
-- **Soft surface** `oklch(0.41 0.022 255)`: hover and skeleton fills, close to Nord's `#4c566a`.
+- **Polar Night** `oklch(0.27 0.009 255)`: softened default canvas, close to Nord's `#2e3440` without a strong blue cast.
+- **Surface** `oklch(0.32 0.011 255)`: pane and reading surface, close to Nord's `#3b4252`.
+- **Raised surface** `oklch(0.36 0.013 255)`: selected controls and proposal surfaces.
+- **Soft surface** `oklch(0.41 0.015 255)`: hover and skeleton fills, close to Nord's `#4c566a`.
 - **Snow ink** `oklch(0.95 0.006 255)`: near-neutral primary reading text, close to Nord's `#eceff4`.
 - **Learning Coral** `oklch(0.63 0.14 20)`: primary action and brand mark.
-- **Coral highlight** `oklch(0.76 0.10 45)`: readable eyebrow, hover, and secondary action text.
+- **Warm accent** `oklch(0.68 0.13 20)` with soft variant `oklch(0.76 0.10 35)`: the dark workspace interface highlight for navigation, focus, citations, actions, and selection.
 - **Frost Blue** `oklch(0.76 0.10 210)`: selection, focus, navigation, and citations.
 - **Recall Gold** `oklch(0.83 0.13 90)`: review emphasis and H2.
 - **Connection Moss** `oklch(0.76 0.10 125)`: accepted state and H3.
@@ -52,26 +52,30 @@ The workspace palette is implemented in OKLCH and follows the requested two-atmo
 - **Raised surface** `oklch(0.925 0.035 70)`: pane separation and selected controls.
 - **Soft surface** `oklch(0.89 0.035 70)`: hover and skeleton fills.
 - **Quiet Ink** `oklch(0.38 0.060 300)`: Rose Pine-inspired purple ink, darkened for sustained reading contrast.
+- **Nord Blue** `oklch(0.43 0.075 255)` with soft variant `oklch(0.52 0.065 255)`: the light workspace highlight, flipping the dark workspace's blue-gray atmosphere into the active foreground role.
 - **Learning Coral** `oklch(0.58 0.14 10)`, **Frost Blue** `oklch(0.52 0.10 245)`, **Recall Gold** `oklch(0.70 0.15 75)`, **Connection Moss** `oklch(0.53 0.10 160)`, **Reflective Plum** `oklch(0.57 0.11 305)`, and **Quiet Teal** `oklch(0.60 0.09 190)`: darkened semantic counterparts that preserve the same heading and state roles.
 
 ### Introduction palette
 
-The introduction is intentionally separate from the workspace palette. It uses a neutral Braun/Rams-like canvas so the story can be clean and bold without making the product itself feel cold or theatrical.
+The introduction is intentionally separate from the workspace palette. It uses a near-neutral Braun/Rams-like canvas so the story can be clean and bold without making the product itself feel cold or theatrical. It uses the same warm accent sparingly; the multi-color heading spectrum does not appear as website decoration.
 
-- Dark introduction: canvas `oklch(0.15 0.005 255)`, surface `oklch(0.20 0.007 255)`, ink `oklch(0.96 0.003 255)`, muted ink `oklch(0.84 0.006 255)`, metadata `oklch(0.78 0.008 255)`.
-- Light introduction: canvas `oklch(0.98 0 0)`, surface `oklch(0.95 0 0)`, ink `oklch(0.20 0 0)`, muted ink `oklch(0.36 0 0)`.
+- Dark introduction: canvas `oklch(0.20 0.004 30)`, surface `oklch(0.245 0.004 30)`, ink `oklch(0.84 0.004 55)`, muted ink `oklch(0.73 0.004 55)`, metadata `oklch(0.63 0.004 55)`.
+- Light introduction: canvas `oklch(0.965 0.004 60)`, surface `oklch(0.935 0.004 60)`, ink `oklch(0.26 0.004 40)`, muted ink `oklch(0.40 0.004 40)`.
+- Introduction accent: one restrained brick tone only, `oklch(0.66 0.07 24)` dark / `oklch(0.48 0.075 24)` light. Product heading colors and semantic state colors do not decorate the introduction.
 - The light values are applied before the first paint with a layout effect, avoiding a dark-text-on-dark-canvas flash when a light theme is persisted.
 
 ### Structural roles
 
-- **Structural divider** `oklch(0.41 0.018 255)` dark / `oklch(0.84 0.030 70)` light: low-contrast boundaries between rails, panes, toolbars, and files.
-- **Selection** `oklch(0.76 0.12 225 / 0.16)` dark / `oklch(0.52 0.10 245 / 0.13)` light: a supporting fill; labels and focus rings carry meaning as well.
+- **Structural divider** `oklch(0.41 0.012 255)` dark / `oklch(0.84 0.030 70)` light: low-contrast boundaries between rails, panes, toolbars, and files.
+- **Selection** uses a low-opacity mix of the warm accent in both themes; labels and focus rings carry meaning as well.
 
 ### Named Rules
 
-**The Two Atmospheres Rule.** Dark mode originates in Obsidian Nord; light mode originates in Rosé Pine Dawn. Layout, spacing, components, and semantic roles never change between them.
+**The Two Atmospheres Rule.** Dark mode originates in Obsidian Nord's quiet field with a warm Aurora accent; light mode originates in Rosé Pine Dawn with the accent darkened against a light field. Theme switching changes both background and highlight roles together.
 
-**The Consistent Spectrum Rule.** Markdown headings keep one semantic hue sequence across both themes: H1 coral, H2 ochre, H3 moss, H4 plum, H5 teal, and H6 blue. Light-mode tones must be darkened as needed to reach at least 4.5:1 contrast on the reading surface; literal RGB matching is forbidden when it harms readability.
+**The Consistent Spectrum Rule.** The multi-color sequence belongs to Markdown heading ranks and durable note reading only: H1 coral, H2 ochre, H3 moss, H4 plum, H5 teal, and H6 blue. It must not become a rainbow of website controls. Light-mode tones must be darkened as needed to reach at least 4.5:1 contrast on the reading surface.
+
+**The Single Interface Accent Rule.** Website navigation, focus, active states, citations, actions, and empty states use one accent per theme: warm in the dark workspace and Nord blue in the light workspace. Moss and coral appear only for success and error; document rank colors stay inside document content.
 
 **The Purposeful Color Rule.** Product color communicates hierarchy, selection, relationship, or state. Decorative color belongs to the introduction and must still reinforce the learning journey.
 
@@ -126,7 +130,7 @@ Lumenfold is flat by default. Depth comes from tonal surface changes, dividers, 
 
 ### Do:
 
-- **Do** let the introduction be cleaner and bolder than the product while preserving the same palette, typography, icons, and semantic hierarchy.
+- **Do** let the introduction be cleaner and bolder than the product while preserving compatible typography, icons, and semantic hierarchy. Its quiet neutral palette may remain separate from the workspace themes.
 - **Do** use Braun and Dieter Rams as a discipline: honest function, strong composition, minimal controls, and color with a job.
 - **Do** show one real source moving through question, citation, approved note, review, and connection.
 - **Do** keep the product calm, compact, predictable, and visibly capable.

@@ -18,6 +18,7 @@ export type Note = {
   body: string;
   sourceIds: string[];
   createdAt: string;
+  updatedAt?: string;
 };
 
 export type StudySet = {

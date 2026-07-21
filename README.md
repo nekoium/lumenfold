@@ -23,7 +23,7 @@ With the deadline close, the acceptance target is one reliable desktop Chromium 
 
 ## Current urgent todos
 
-The visual shell and deterministic demo path are in place. The remaining two-hour path is:
+The visual shell and deterministic demo path are in place. Text/Markdown source import and manual Markdown note creation and editing are also working in local browser state. The remaining two-hour path is:
 
 1. **Freeze the slice:** verify once that source -> question -> citations -> approve note/study set works in demo mode.
 2. **Ship the static app:** run the production build and deploy the current Vite output to the Cloudflare target.
@@ -660,8 +660,8 @@ The layout can collapse into a single-column view for smaller screens, but deskt
 - [ ] Define Zod schemas for AI answers, citations, note proposals, and instrument proposals.
 - [ ] Create the six-table Dexie schema and seed `sources/`, `notes/`, and `instruments/`.
 - [ ] Add folder/subfolder navigation and the create, rename, move, and delete actions used in the demo.
-- [ ] Add pasted-text and `.txt`/`.md` source import.
-- [ ] Add source preview and a basic Markdown note editor/renderer.
+- [x] Add pasted-text and `.txt`/`.md` source import.
+- [x] Add source preview and a basic Markdown note editor/renderer.
 - [ ] Add selected-source and capped whole-vault AI chat.
 - [ ] Display grounded answers with exact source excerpts.
 - [x] Add preview, confirm, and cancel for AI-proposed notes and instruments.
@@ -683,7 +683,7 @@ The layout can collapse into a single-column view for smaller screens, but deskt
 
 - [ ] Add PDF.js extraction for text-based PDFs.
 - [ ] Add a small source search/filter.
-- [ ] Add note editing.
+- [x] Add note editing.
 - [ ] Add a minimal relationship indicator between notes and sources.
 - [ ] Add a shareable read-only demo state.
 - [ ] Add a second provider configuration.
