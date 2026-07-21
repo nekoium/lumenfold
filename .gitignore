@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.out/
+
+# Vite / TypeScript caches
+node_modules/.vite/
+node_modules/.vite-temp/
+*.tsbuildinfo
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Cloudflare / Wrangler local state
+.wrangler/
+wrangler-debug.log
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Test and coverage output
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.nyc_output/
+
+# Browser / automation artifacts
+screenshots/
+videos/
+traces/
+
+# Local generated artifacts
+# Keep this ignored by default. Move selected images into docs/assets/
+# if they are intentionally part of the repository.
+artifacts/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VS Code local workspace config
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# Hermes / agent scratch state
+.agents/
+.hermes/tmp/
+.hermes/cache/
+.codex/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo

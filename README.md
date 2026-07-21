@@ -4,6 +4,17 @@ Lumenfold is a learning scaffold presented as a personal knowledge management sy
 
 > Collect from the world. Internalize through active learning. Keep what becomes yours.
 
+## Run the alpha
+
+The current alpha is a local Vite/React prototype with a deterministic assistant adapter. It does not require an API key.
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173/`. Use **Open demo** to enter the workspace, ask the seeded source a question, and approve a note or study-set instrument. The alpha keeps its small vault in browser `localStorage`; the documented Dexie, Worker, and external credential boundaries remain the next implementation layer.
+
 This repository begins as a time-limited hackathon prototype. Its first release tests one narrow but complete path through a much larger vision.
 
 ## Vision
