@@ -45,32 +45,33 @@ Adopting a learning system should not require surrendering years of work to an o
 
 The intended vault can contain:
 
-- local knowledge files in Markdown;
+- local notes in Markdown;
 - raw references such as PDFs, EPUBs, images, audio, and video;
 - saved web snapshots or lightweight link records;
 - sidecar metadata in JSON or YAML where the original format cannot carry it;
-- explicit links between sources, excerpts, prompts, learning activities, and notes.
+- explicit links between sources, excerpts, notes, and instruments.
 
-The exported vault remains useful without Lumenfold. Users can back it up, place it under version control, or process it with scripts. Obsidian should be able to open the Markdown knowledge layer, and tools such as Open Notebook should be able to read compatible source files. Exact interoperability depends on each tool's supported formats; Lumenfold will document its layout rather than promise seamless compatibility with every feature of another product.
+The exported vault remains useful without Lumenfold. Users can back it up, place it under version control, or process it with scripts. Obsidian should be able to open the Markdown notes layer, and tools such as Open Notebook should be able to read compatible source files. Exact interoperability depends on each tool's supported formats; Lumenfold will document its layout rather than promise seamless compatibility with every feature of another product.
 
-This portable, local-first direction makes migration straightforward and reduces adoption risk. The long-term product may add optional indexes, caches, databases, or synchronization for speed and convenience, but those should be rebuildable layers. The user's exported sources and knowledge files remain the durable representation.
+This portable, local-first direction makes migration straightforward and reduces adoption risk. The long-term product may add optional indexes, caches, databases, or synchronization for speed and convenience, but those should be rebuildable layers. The user's exported sources, notes, and instruments remain the durable representation.
 
-A provisional exported layout is:
+A high-level exported layout is:
 
 ```text
 Lumenfold Vault/
-├── sources/          # Original references and web captures
-├── notes/            # Portable Markdown knowledge files
-├── learning/         # Reviews, prompts, and learning-state metadata
-├── attachments/      # Images and other note attachments
-└── .lumenfold/       # Rebuildable app metadata and indexes
+├── sources/          # Original external references and captures
+├── notes/            # Durable learner-authored Markdown
+├── instruments/      # Practice, plans, reminders, calendars, and future tools
+└── .lumenfold/       # Rebuildable app metadata, indexes, and caches
 ```
+
+The top-level folders describe ownership and lifecycle, not every product feature. Users may create subfolders inside them, but Lumenfold does not impose `inbox/`, `library/`, `concepts/`, `projects/`, `srs/`, or `quizzes/` as permanent taxonomies. Binary files may live beside the source or note that owns them; a separate attachments root is deferred until the product has a concrete need for one.
 
 ### Hackathon storage model
 
-The MVP runs entirely in the browser and represents this structure as a virtual vault in IndexedDB. The interface exposes folders, subfolders, sources, notes, and file operations without requesting access to the user's operating-system filesystem.
+The MVP runs entirely in the browser and represents this structure as a virtual vault in IndexedDB. The interface exposes folders, subfolders, sources, notes, instruments, and file operations without requesting access to the user's operating-system filesystem.
 
-The MVP includes explicit **Export Vault** and **Import Vault** actions. Export produces a ZIP with the documented folder structure, original source blobs where available, Markdown notes, and JSON metadata. Import reconstructs the virtual vault from that archive. Browser storage is origin- and browser-profile-specific and may be removed if the user clears site data, so export is the portability and backup boundary for this prototype.
+The MVP includes explicit **Export Vault** and **Import Vault** actions. Export produces a ZIP with the documented folder structure, original source blobs where available, Markdown notes, instrument definitions, and durable instrument state. Import reconstructs the virtual vault from that archive. Browser storage is origin- and browser-profile-specific and may be removed if the user clears site data, so export is the portability and backup boundary for this prototype.
 
 This is an implementation compromise for the hackathon, not a retreat from the open-vault philosophy. Direct folder access and optional synchronization can be evaluated after the core learning workflow is proven.
 
@@ -81,13 +82,128 @@ The full product should support a continuing loop:
 1. Capture or reference material without forcing it into Markdown.
 2. Explore and question sources with traceable citations.
 3. Choose a learning method appropriate to the goal.
-4. Distill useful understanding into portable knowledge files.
-5. Review, retrieve, apply, and connect that knowledge over time.
+4. Distill useful understanding into portable notes.
+5. Review, retrieve, apply, and connect those notes over time.
 6. Let the resulting understanding guide the next round of collection.
 
-The hackathon demonstrates the smallest credible version of that loop:
+The hackathon demonstrates one compact version of that loop:
 
-> Add a source, ask a grounded question, inspect the answer and citations, save the useful result as Markdown in the virtual vault, and export the vault in portable formats.
+> Add a source, ask a grounded question, approve a distilled Markdown note, generate learning activities, complete one review and quiz, then export the portable vault.
+
+## Expected feature set
+
+Lumenfold's feature map follows the collection/internalization cycle. The labels below distinguish what the hackathon must demonstrate from what can wait.
+
+### Must demonstrate
+
+| Area | Expected behavior | MVP implementation |
+| --- | --- | --- |
+| Virtual vault | Browse folders, subfolders, sources, notes, and instruments | IndexedDB/Dexie tree with create, rename, move, and delete actions |
+| Source capture | Paste text and import `.txt` or `.md` files | Store the original text plus metadata under `sources/` |
+| Source viewer | Read imported text and Markdown inside Lumenfold | Built-in text/Markdown preview |
+| Grounded AI chat | Ask about the selected source or the small current vault and receive cited answers | Send selected extracted text to `/api/ask`; whole-vault mode concatenates a strictly capped set of text documents |
+| AI note distillation | Ask AI to create a durable Markdown note from the conversation and sources | AI proposes a typed `create_note` operation with citations; the learner previews and confirms it |
+| Markdown notes | Read generated notes, edit their Markdown, and link them back to sources | Plain Markdown content under `notes/` with source IDs in frontmatter |
+| Study-set instrument | Generate a small deck and quiz from a source or note | AI proposes one study-set instrument; confirmed content becomes a readable Markdown instrument under `instruments/` |
+| Instrument review | Review due cards, reveal answers, and grade recall | A minimal SM-2-style scheduler stores mutable state beside the study-set instrument |
+| Quiz session | Answer questions and receive a score with explanations | Local UI evaluates answers; no second AI request is required |
+| Persistence and portability | Refresh without data loss and move the vault out of the browser | IndexedDB persistence plus ZIP export/import |
+| Reliable demo mode | Complete the workflow when the provider is unavailable | Deterministic sample answer, note, study-set instrument, and quiz content using the same schemas as real mode |
+
+### Stretch features
+
+- Import and extract text from ordinary text-based PDFs with PDF.js.
+- Preview images, PDFs, audio, and video stored as browser `Blob`s.
+- Import `.docx` with Mammoth and `.epub` with an EPUB parser.
+- Add backlinks and simple `[[wikilink]]` navigation between Markdown notes.
+- Add assistant source search and capture proposals.
+- Let AI propose `update_note`, `update_instrument`, `rename_node`, and `move_node` operations.
+- Let AI draft reusable skills and plugin configurations for learner approval.
+- Add source search and a small note relationship view.
+
+### Future features
+
+- Web-page capture with sanitized snapshots and link metadata.
+- OCR for scanned PDFs and images.
+- Audio/video transcription, chaptering, and multimodal question answering.
+- Retrieval and chunking for large vaults.
+- Mature spaced-repetition algorithms, leech handling, statistics, and scheduling controls.
+- A full Markdown editor, graph view, plugin system, synchronization, and direct local-folder access.
+
+### Format support means several different things
+
+Lumenfold should not claim that every stored file is immediately understandable by AI. Each format can have four separate capability levels:
+
+1. **Store:** preserve the original file in the vault.
+2. **Preview:** display or play it in the browser.
+3. **Extract:** derive text or metadata from it.
+4. **Study:** include the extracted representation in grounded chat, note generation, cards, and quizzes.
+
+| Format | Store | Preview | Extract/study in the hackathon |
+| --- | --- | --- | --- |
+| Plain text / Markdown | Must | Must | Must |
+| Text-based PDF | Stretch | Stretch | Stretch |
+| Image | Stretch | Stretch | Future OCR/multimodal |
+| Audio / video | Stretch | Stretch with native browser players | Future transcription/multimodal |
+| Word `.docx` | Stretch | Extracted-text preview only | Stretch with Mammoth |
+| EPUB | Stretch | Basic reader only if time remains | Stretch with an EPUB parser |
+| Web page / URL | Save link as stretch | Open original link | Future capture service |
+
+The recorded MVP should use text or Markdown. A text-based PDF may be included only after that path is stable.
+
+## AI actions and learner control
+
+The assistant should help the learner answer questions, summarize and explain material, organize and search the vault, capture sources, design quizzes and other instruments, and draft reusable skills or plugin configurations. It may propose modifications to durable files, but the model must not receive unrestricted database or filesystem access. The Worker returns normal assistant content plus a list of typed proposals:
+
+```ts
+type VaultProposal =
+  | { type: "create_note"; path: string; markdown: string; sourceIds: string[] }
+  | { type: "create_instrument"; path: string; instrument: InstrumentDraft; sourceIds: string[]; noteIds: string[] }
+  | { type: "update_note"; id: string; markdown: string; expectedRevision: string }
+  | { type: "update_instrument"; id: string; markdown: string; expectedRevision: string }
+  | { type: "create_source"; path: string; content: string; mimeType: string; metadata: Record<string, string> }
+  | { type: "rename_node"; id: string; name: string }
+  | { type: "move_node"; id: string; parentId: string | null }
+  | { type: "create_skill"; path: string; markdown: string; sourceIds: string[]; noteIds: string[] }
+  | { type: "create_plugin_config"; path: string; markdown: string; instrumentType: string };
+
+type InstrumentDraft = {
+  type: "study_set" | "calendar" | "reminder" | "skill" | "plugin_config";
+  title: string;
+  markdown: string;
+};
+```
+
+Lumenfold validates proposals with Zod, rejects unsafe or malformed paths, checks source and note references, shows a human-readable preview or diff, and writes only after the learner confirms. The MVP supports `create_note` and `create_instrument`; source capture, search-assisted organization, updates, moves, renames, reusable skills, and plugin configurations are follow-on assistant capabilities. The MVP should not let the model delete files or silently overwrite existing work. Destructive operations require a separate explicit confirmation and a revision check.
+
+This design is easier to test than a free-form agent: each operation has a fixed schema, a predictable UI state, and a clear audit boundary.
+
+`create_skill` and `create_plugin_config` remain distinct proposal operations because they have different review questions and ownership boundaries. Both produce declarative, human-readable instrument artifacts after approval; neither proposal may install executable code or grant unrestricted access. A future plugin system can consume an approved configuration without changing the proposal boundary.
+
+## Vault structure
+
+Use one portable Lumenfold vault with three connected top-level domains, rather than unrelated feature vaults:
+
+```text
+Lumenfold Vault/
+├── sources/                    # Material that came from outside the learner
+├── notes/                      # Durable learner-authored understanding
+├── instruments/                # Tools and scaffolds that work on sources and notes
+│   ├── study-set.md            # Cards and quiz questions in one portable instrument
+│   └── study-set.state.json    # Mutable scheduling state for that instrument
+└── .lumenfold/                 # Rebuildable indexes, schema version, and app cache
+```
+
+This separation keeps `notes/` clean enough to open as an Obsidian-style Markdown vault while allowing sources and instruments to remain first-class parts of Lumenfold. One root archive preserves links, export/import, and atomic backup better than separate independent vaults. A study set is one instrument rather than one file per card, which keeps the exported vault readable and avoids filesystem noise.
+
+The boundaries are semantic:
+
+- `sources/` contains what came from outside the learner;
+- `notes/` contains what the learner has accepted or authored as durable understanding;
+- `instruments/` contains portable tools and scaffolds such as study sets, reminders, calendars, plans, and future plugin-owned user data;
+- `.lumenfold/` contains rebuildable implementation data and must never be the only copy of user-authored content.
+
+All three domains are interconnected. Every durable artifact has a stable ID and explicit outbound links; managed rename and move operations update Markdown wikilinks and frontmatter references, while backlinks are derived from the graph. Instruments reference sources and notes instead of copying them. A study-set instrument keeps its prompts, answers, quiz questions, and source/note links together in Markdown; mutable review state sits beside it in documented JSON. Unapproved AI proposals remain transient.
 
 ## Hackathon goal
 
@@ -98,10 +214,12 @@ Deliver a small product that can be demonstrated end to end in a short video:
 3. See the source inside a folder in the virtual vault.
 4. Ask a question about the source.
 5. Receive a grounded answer with source references.
-6. Save the answer as a Markdown note.
-7. Navigate the virtual vault and show its folders and files.
-8. Refresh the page and reopen the saved note.
-9. Export the vault as a portable archive.
+6. Approve an AI-proposed Markdown note.
+7. Generate and approve a small SRS deck and quiz.
+8. Review one card and complete the quiz.
+9. Navigate the virtual vault and show the separate source, note, and instrument files.
+10. Refresh the page and reopen the saved work.
+11. Export the vault as a portable archive.
 
 The demo should make the product's identity obvious within the first minute: Lumenfold helps a person move from collected information to reusable understanding.
 
@@ -129,8 +247,10 @@ The project therefore follows these rules:
 - A question-and-answer panel.
 - AI answers grounded in the selected source.
 - Lightweight citations using exact source excerpts.
-- Saving an answer as a Markdown note in the virtual vault.
-- A note list or simple connected workspace view.
+- Preview-and-confirm AI proposals for a Markdown note and a study-set instrument containing SRS cards and quiz questions.
+- A Markdown note viewer and basic editor.
+- A minimal SRS review session with four recall grades.
+- A minimal multiple-choice quiz session with local scoring.
 - Persistent storage in IndexedDB.
 - Vault export/import using a documented ZIP layout.
 - A visible demo/mock mode that works without an external API.
@@ -148,6 +268,27 @@ The project therefore follows these rules:
 
 These are possible future directions, not requirements for the hackathon proof of concept.
 
+## Implementation difficulty and risk
+
+| Capability | Difficulty for this MVP | Main risk | Proposed control |
+| --- | --- | --- | --- |
+| Text/Markdown import and viewing | Low | Encoding and duplicate names | UTF-8 first, generated IDs, visible filenames |
+| Virtual folders and files | Medium | Recursive move/delete bugs | Parent-ID tree, transaction tests, confirmation before recursive delete |
+| Markdown editing and rendering | Low-medium | Unsafe HTML and unsaved edits | Disable raw HTML, sanitize links, explicit save state |
+| AI chat over one source | Medium | Invalid JSON, hallucinated citations, provider timeout | Zod validation, exact-excerpt verification, timeout, demo fallback |
+| Chat over the whole vault | Medium-high | Prompt size and irrelevant context | Limit the MVP to a small text vault, show included files, cap characters; add retrieval later |
+| AI-created notes/instruments | Medium | Malformed writes or unwanted changes | Typed proposals, path validation, preview, explicit confirmation, no overwrite/delete in MVP |
+| SRS review | Low-medium | Scheduler edge cases | Small pure scheduling function with fixed clock tests; advertise it as a minimal scheduler |
+| Quiz session | Low | Answer leakage or inconsistent schema | Generate once, store answer key separately in the object, score locally |
+| ZIP export/import | Medium | Path traversal, schema mismatch, lost blobs | Sanitize archive paths, version the manifest, round-trip test a seeded vault |
+| PDF text extraction | Medium-high | Scans, columns, tables, and huge files | Stretch only; support ordinary text PDFs and reject unsupported cases clearly |
+| Word/EPUB extraction | Medium-high | Parser and format edge cases | Stretch only; one library per format and no layout-fidelity promise |
+| Image understanding | High | OCR or multimodal API work | Store/preview only; defer understanding |
+| Audio/video understanding | Very high | Upload size, codecs, transcription cost and latency | Native preview only; defer transcription and multimodal chat |
+| Web capture | High | CORS, dynamic pages, sanitization, copyright and server-side fetching | Save a URL only as stretch; defer snapshots |
+
+The breadth is still aggressive for one and a half days. If time slips, cut in this order: PDF support, advanced file operations, whole-vault chat, ZIP import, and note editing. Do not cut the visible collection-to-internalization loop: one text source, one grounded answer, one approved note, a few cards, one quiz, persistence, and ZIP export.
+
 ## Exact MVP tech stack
 
 The MVP uses one TypeScript codebase deployed as a React single-page application plus a small Cloudflare Worker API.
@@ -159,6 +300,7 @@ The MVP uses one TypeScript codebase deployed as a React single-page application
 | Styling | Plain CSS with CSS custom properties | Full visual control without a component-library setup cost |
 | Virtual vault | IndexedDB via Dexie.js | Structured records and source `Blob`s, transactions, schema migrations, and reactive React queries without raw IndexedDB boilerplate |
 | Portable vault | JSZip | Import/export of a folder-shaped ZIP containing source files, Markdown, and JSON metadata |
+| Markdown | `react-markdown` + `remark-gfm` | Safe Markdown rendering with common GitHub-style syntax |
 | Optional PDF stretch | PDF.js, text-based PDFs only | Adds one common source type if the complete text/Markdown workflow is already stable |
 | Runtime validation | Zod | Validates untrusted API and model output before it reaches the UI |
 | Backend | Cloudflare Worker using the Web `fetch` API | Same deployment as the SPA, secret-holding `/api/ask`, and no separate server to operate |
@@ -170,16 +312,17 @@ Do not add Redux, a UI component framework, a router, Hono, a vector database, a
 
 ### AI connection
 
-Use a small provider adapter rather than coupling the UI directly to one vendor:
+Use one provider adapter and one structured response contract rather than coupling the UI directly to a vendor:
 
 ```text
 Chat UI
-  -> application AI interface
-      -> real provider adapter through a Cloudflare Worker endpoint
-      -> deterministic local demo adapter
+  -> POST /api/ask
+      -> real OpenAI-compatible provider
+      -> deterministic demo adapter
+  <- answer + citations + typed vault proposals
 ```
 
-The real provider path is a minimal `POST /api/ask` endpoint. It receives the selected source and question, calls one OpenAI-compatible Responses endpoint, and returns:
+The endpoint receives the selected source or a strictly capped set of extracted vault documents, the recent conversation, and the requested action. It returns:
 
 ```ts
 {
@@ -189,21 +332,28 @@ The real provider path is a minimal `POST /api/ask` endpoint. It receives the se
     label: string;
     excerpt: string;
   }>;
+  proposals: VaultProposal[];
 }
 ```
 
-Do not put an API key in browser JavaScript. `worker/index.ts` reads the provider URL, model, and API key from Cloudflare Worker configuration and secrets. Local development uses an ignored `.dev.vars` file; deployment uses `wrangler secret put AI_API_KEY`.
+Use the same call and schema for note and study-set instrument generation. Cards and quiz questions are fields inside a study-set instrument, not separate vault operations. Do not build separate agent services. The client validates citations against the submitted source text and validates every proposal before showing it for approval.
+
+Do not put an API key in browser JavaScript. `worker/index.ts` reads the endpoint, deployment-owned model default, and API key from Cloudflare Worker configuration and secrets. Local development uses an ignored `.dev.vars` file; deployment uses `wrangler secret put AI_API_KEY`. Model selection is not a learner-facing connection field for the MVP.
 
 ### Virtual-vault implementation
 
-Use four small Dexie tables:
+Use six small Dexie tables:
 
 - `nodes`: folders and file metadata (`id`, `parentId`, `name`, `kind`, timestamps);
 - `sources`: source metadata, extracted text, MIME type, and original `Blob`;
-- `notes`: Markdown body and links to source IDs;
+- `notes`: durable Markdown notes and links to source IDs;
+- `instruments`: portable instrument definitions, including study sets, cards, quiz questions, reminders, and calendars;
+- `reviews`: mutable review schedules and history for instrument activities;
 - `settings`: schema version and small UI preferences.
 
-Folder paths are derived from `parentId`; do not duplicate the full path in every record. For the MVP, implement create folder, rename, move, delete, and breadcrumb navigation only if needed for the demo. Do not build a general desktop-style file manager.
+The normalized tables make review queries and instrument rendering easy; ZIP export translates them into the documented Markdown/JSON vault layout. IndexedDB is an implementation index, not the public interchange format.
+
+Folder paths are derived from `parentId`; do not duplicate the full path in every record. Implement create folder, rename, move, delete, and breadcrumb navigation only where the demo uses them. Do not build a general desktop-style file manager.
 
 Call `navigator.storage.persist()` after the learner creates the first vault and show whether persistent storage was granted. This reduces eviction risk but does not replace export. Never imply that browser storage is as durable as a normal local folder.
 
@@ -277,20 +427,39 @@ Do not attempt a full retrieval-augmented generation pipeline in the first day. 
 
 #### Demo mode
 
-If the provider request fails, the user chooses demo mode, or the app is built without a key, return a deterministic answer based on the source text and question. The demo adapter should:
+If the provider request fails, the user chooses demo mode, or the app is built without a key, return a deterministic answer and typed note/instrument proposals based on the source text and question. The demo adapter should:
 
 - identify a few matching sentences or keywords;
 - return a clearly labelled simulated answer;
 - include excerpts from the selected source;
+- propose a deterministic note or study-set instrument using the same `VaultProposal` schema as real mode;
 - use the same response shape as the real adapter.
 
 This is not a substitute for the real AI feature. It is a reliability layer that keeps the user interface, source workflow, citation display, and note-saving behavior demonstrable.
 
 ### Provider recommendation
 
-Configure one OpenAI-compatible provider for the real path. Keep its base URL, model name, and credential in Worker configuration so the UI and public repository remain provider-neutral.
+Configure one OpenAI-compatible provider for the real path. Keep its endpoint, deployment-owned model default, and credential in Worker configuration so the UI and public repository remain provider-neutral. The learner-facing connection only needs an endpoint URL, an optional format (OpenAI-compatible by default), and a reference to an externally held credential.
 
 The first implementation should support one provider and one model only. A provider picker and fallback chain are not MVP requirements. If the configured endpoint is unavailable, switch to demo mode and continue recording the product workflow.
+
+### AI connection scope and credential boundary
+
+The connection contract is intentionally small:
+
+```ts
+type AIConnectionSettings = {
+  endpointUrl: string;
+  format?: "openai_compatible" | "custom";
+  apiKeyRef?: string;
+};
+```
+
+The default format is OpenAI-compatible. The endpoint URL and format may be selected by the user or deployment operator; the raw API key is never stored in IndexedDB, exported into the vault, or committed to the repository. `apiKeyRef` identifies a secret held outside the vault.
+
+For the hosted MVP, the Cloudflare Worker owns the provider secret through Worker configuration, while the browser receives only the assistant response. For the future locally installed application, the secret should live in the operating system keychain or an external local credential broker. Browser-side encryption alone is not a sufficient boundary: if the browser can decrypt the key, the application runtime can access it too.
+
+Lumenfold should not silently discover, rotate, or export provider credentials. A user may configure a connection, test it, and revoke it, but credential storage remains the responsibility of the deployment or local secret store.
 
 ## Core data model
 
@@ -301,7 +470,7 @@ type VaultNode = {
   id: string;
   parentId: string | null;
   name: string;
-  kind: "folder" | "source" | "note";
+  kind: "folder" | "source" | "note" | "instrument";
   createdAt: string;
   updatedAt: string;
 };
@@ -325,6 +494,18 @@ type Note = {
   createdAt: string;
 };
 
+type Instrument = {
+  id: string;
+  nodeId: string;
+  type: "study_set" | "calendar" | "reminder" | "skill" | "plugin_config" | "plugin_data";
+  title: string;
+  body: string;
+  sourceIds: string[];
+  noteIds: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 type Answer = {
   question: string;
   answer: string;
@@ -335,9 +516,19 @@ type Answer = {
   }>;
   mode: "real" | "demo";
 };
+
+type ReviewState = {
+  instrumentId: string;
+  cardId: string;
+  dueAt: string;
+  intervalDays: number;
+  ease: number;
+  repetitions: number;
+};
+
 ```
 
-Persist nodes, sources, notes, and settings in IndexedDB. Keep the current question, selected source, and current answer as transient UI state.
+Persist nodes, sources, notes, instruments, reviews, and settings in IndexedDB. Keep the current question, selected source, current answer, and quiz session as transient UI state.
 
 ## Interface outline
 
@@ -348,7 +539,7 @@ The first screen should be the usable workspace, not a marketing landing page.
 - Lumenfold wordmark.
 - Folder tree and breadcrumb navigation.
 - Add source and create-folder actions.
-- Source and note files with selected state.
+- Source, note, and instrument files with selected state.
 
 ### Center: Source and question workspace
 
@@ -357,103 +548,108 @@ The first screen should be the usable workspace, not a marketing landing page.
 - Ask button with loading and error states.
 - Demo/real mode indicator.
 - Answer area with citations.
-- Save as note action.
+- Preview and confirm a proposed note and study-set instrument.
 
-### Right rail: Notes
+### Right rail: Notes and instruments
 
 - Saved note list.
+- Relevant instrument list.
 - Note preview.
 - Source references.
 - Export/import vault actions.
 - Empty state when no notes exist.
 
-The layout can collapse into a single-column view for smaller screens, but desktop should be the primary demo viewport because it communicates the relationship between sources, understanding, and notes.
+### Instrument mode
+
+- Due-card count and one-card review view.
+- Reveal-answer action and four recall grades: Again, Hard, Good, Easy.
+- Multiple-choice quiz view with local scoring and explanations.
+
+The layout can collapse into a single-column view for smaller screens, but desktop should be the primary demo viewport because it communicates the relationship between sources, notes, and instruments.
 
 ## One-and-a-half-day execution plan
 
 ### First 60 minutes: establish the slice
 
 - Scaffold the Cloudflare React/Vite/TypeScript project.
-- Add the three-column workspace layout.
-- Add one hard-coded sample source.
-- Add the basic vault/source/question/answer/note types.
+- Add the workspace shell with vault, study, notes, and instrument views.
+- Seed one sample source, note, study-set instrument, and quiz content.
+- Define and validate the shared data and proposal schemas.
 
-**Checkpoint:** the browser shows the complete workflow, even before persistence or the real AI call exists.
+**Checkpoint:** every part of the final walkthrough is visible with seeded data.
 
-### Hours 1-3: make the workflow real locally
+### Hours 1-3: virtual vault and Markdown notes
 
-- Add the Dexie schema and seed a virtual vault.
+- Add the six-table Dexie schema.
+- Seed `sources/`, `notes/`, and `instruments/` roots.
 - Add folder navigation, folder creation, source import, and selection.
-- Add the question form.
-- Add deterministic demo-mode answers and exact source excerpts.
-- Save generated Markdown notes in IndexedDB.
+- Add text/Markdown preview and a basic Markdown note editor.
+- Persist everything through refresh.
 
-**Checkpoint:** the full learning loop persists through a browser refresh without a network connection.
+**Checkpoint:** source and note files can be created, viewed, edited, and reopened without the network.
 
-### Hours 3-5: add the real AI path
+### Hours 3-5: AI chat and controlled writing
 
-- Add the provider adapter interface.
-- Add the Cloudflare Worker `/api/ask` endpoint.
-- Read provider URL and model from Worker configuration and the key from a Worker secret.
-- Validate the returned JSON with Zod.
-- Add input/output limits, a timeout, and failure handling.
-- Fall back to demo mode when the request fails.
+- Add the provider adapter and Cloudflare Worker `/api/ask` endpoint.
+- Return cited answers and typed note/instrument proposals in one response schema.
+- Validate output with Zod and verify quoted citations against submitted text.
+- Add proposal preview, confirm, and cancel states.
+- Add input/output limits, timeout handling, and deterministic fallback.
 
-**Checkpoint:** one real question works, and a failed request does not destroy the demo.
+**Checkpoint:** chat can answer from one source and create approved vault artifacts without unrestricted write access.
 
-### Hours 5-7: portability and product clarity
+### Hours 5-7: internalization loop
 
-- Add ZIP export/import with Markdown notes, source files, and JSON metadata.
-- Refine typography, spacing, colors, and source/answer/note hierarchy.
-- Add loading, empty, error, and saved states.
-- Make citations, vault location, and save actions obvious.
-- Add a short sample source tailored to the final demo story.
+- Add one-card SRS review with Again, Hard, Good, and Easy ratings.
+- Add a small SM-2-style scheduling function and review-state persistence.
+- Add multiple-choice quiz rendering and local scoring.
+- Export/import sources, Markdown notes, instrument Markdown, and review-state JSON with JSZip.
 
-**Checkpoint:** a first-time viewer can understand the workflow without narration and recover the vault outside browser storage.
+**Checkpoint:** a learner can distill, review, test, refresh, export, and import one coherent learning unit.
 
-### Hours 7-9: test and deploy a candidate
+### Hours 7-9: presentation, tests, and candidate deployment
 
-- Run unit tests and a clean production build.
-- Test the full workflow from fresh browser storage.
-- Test real mode, demo mode, and an unanswerable question.
-- Export the vault, clear browser storage, and import it again.
+- Refine typography, hierarchy, loading, empty, error, approval, and saved states.
+- Run focused tests for proposal validation, SRS scheduling, quiz scoring, and ZIP round-trip.
+- Run a clean production build and Chromium happy-path smoke test.
 - Deploy a candidate build to Cloudflare.
-- Record a rough video and identify confusing moments.
+- Record a rough video and remove confusing or unfinished interactions.
 
-### Final hours: stabilize, document, and record
+### Final hours: stabilize and record
 
-- Fix only issues that affect the demo path.
-- Remove unfinished controls and dead UI.
+- Fix only issues that affect the recorded path.
 - Confirm no API keys are committed or sent to the browser.
 - Confirm the Worker rejects oversized requests and handles provider timeouts.
-- Update this README with final run and deployment instructions.
+- Verify the exported ZIP contains readable, correctly separated files.
+- Update run and deployment instructions.
 - Record and upload the final YouTube video.
-- Capture the Codex session ID and repository state required by the hackathon.
+- Capture the Codex session ID and final repository state.
 
 ## Todo checklist
 
 ### Must finish
 
 - [ ] Scaffold React + TypeScript + Vite with the Cloudflare Vite plugin.
-- [ ] Build the three-part vault, workspace, and notes layout.
-- [ ] Add a sample source that can be used immediately.
-- [ ] Create the Dexie schema and seed the virtual vault.
-- [ ] Add folder/subfolder navigation and basic create/rename/delete actions.
-- [ ] Add source import and selection.
-- [ ] Add question submission.
-- [ ] Implement deterministic demo mode.
-- [ ] Display answer citations as exact source excerpts.
-- [ ] Save answers as Markdown notes in the virtual vault.
-- [ ] Persist nodes, sources, notes, and settings in IndexedDB.
-- [ ] Add ZIP export/import for the portable vault.
-- [ ] Add the Cloudflare Worker real AI endpoint.
+- [ ] Build the vault, study, notes, and instruments views.
+- [ ] Define Zod schemas for AI answers, citations, note proposals, and instrument proposals.
+- [ ] Create the six-table Dexie schema and seed `sources/`, `notes/`, and `instruments/`.
+- [ ] Add folder/subfolder navigation and the create, rename, move, and delete actions used in the demo.
+- [ ] Add pasted-text and `.txt`/`.md` source import.
+- [ ] Add source preview and a basic Markdown note editor/renderer.
+- [ ] Add selected-source and capped whole-vault AI chat.
+- [ ] Display grounded answers with exact source excerpts.
+- [ ] Add preview, confirm, and cancel for AI-proposed notes and instruments.
+- [ ] Persist nodes, sources, notes, instruments, reviews, and settings in IndexedDB.
+- [ ] Add one-card SRS review with a minimal SM-2-style scheduler.
+- [ ] Add multiple-choice quiz sessions with local scoring and explanations.
+- [ ] Add ZIP export/import with separate `sources/`, `notes/`, and `instruments/` content.
+- [ ] Implement deterministic demo answers and proposals using the same schemas.
+- [ ] Add the Cloudflare Worker `/api/ask` endpoint.
 - [ ] Keep API credentials out of client code and version control.
-- [ ] Add Worker request limits, timeout handling, and basic abuse protection.
-- [ ] Add real-mode failure fallback to demo mode.
-- [ ] Add loading, empty, failure, and saved states.
-- [ ] Run tests and a production build successfully.
+- [ ] Add request limits, timeout handling, basic abuse protection, and provider-failure fallback.
+- [ ] Test proposal validation, scheduling, quiz scoring, persistence, and ZIP round-trip.
+- [ ] Run a production build and Chromium smoke test.
 - [ ] Deploy the public build to Cloudflare Workers.
-- [ ] Test the clean demo path from start to finish.
 - [ ] Record and upload the YouTube demonstration.
 - [ ] Record the Codex session ID and final repository link or commit required by the hackathon.
 
@@ -499,10 +695,13 @@ A fresh user must be able to complete this sequence without developer interventi
 - select the sample source;
 - ask a question;
 - see an answer and at least one citation;
-- save the answer as a note;
-- find the note in the virtual-vault tree;
-- reopen the note after refreshing the page;
-- export the vault as a ZIP containing readable Markdown;
+- preview and approve a Markdown note;
+- generate and approve a study-set instrument;
+- review one card and grade recall;
+- complete the quiz and see a score;
+- find the source, note, and study-set instrument in their separate virtual-vault domains;
+- reopen them after refreshing the page;
+- export the vault as a ZIP containing readable Markdown and documented JSON state;
 - understand whether the answer came from real or demo mode.
 
 ## Video demonstration plan
@@ -516,12 +715,14 @@ Suggested sequence:
 3. Add or select a source.
 4. Ask a concrete question.
 5. Point out the grounded answer and citation excerpts.
-6. Save the result as a Markdown note.
-7. Navigate to the note in the virtual-vault tree.
-8. Refresh the browser and reopen the note to show persistence.
-9. Export the vault and briefly show the folder-shaped ZIP and readable Markdown file.
-10. Briefly explain that the architecture supports a real provider and a deterministic demo fallback.
-11. End with the public URL, repository, and hackathon-relevant implementation details.
+6. Preview and approve the proposed Markdown note.
+7. Generate and approve a study-set instrument containing a few SRS cards and a short quiz.
+8. Review one card and answer the quiz.
+9. Show `sources/`, `notes/`, and `instruments/` in the virtual-vault tree.
+10. Refresh the browser and reopen the saved work.
+11. Export the vault and briefly show its readable Markdown and JSON files.
+12. Briefly explain the real provider and deterministic demo fallback.
+13. End with the public URL, repository, and hackathon-relevant implementation details.
 
 Record the happy path with demo mode available as a safety net. Do not expose API keys, terminal secrets, or unrelated desktop notifications. Use the browser at a stable desktop resolution and close unrelated applications before recording.
 
@@ -542,13 +743,15 @@ Do not claim feature parity. Describe what Lumenfold actually implements in the 
 The MVP is done when:
 
 - the application starts with one documented command;
-- the source-to-question-to-citation-to-note workflow works end to end;
+- the source-to-question-to-citation-to-approved-note workflow works end to end;
+- AI-generated study-set instruments can be previewed, approved, and stored as portable files;
+- one SRS review and one quiz session work without another AI call;
 - the workflow works in deterministic demo mode without external credentials;
 - the real provider path works when configured;
 - provider failures produce a recoverable fallback instead of a blank screen;
-- saved notes persist in the browser-side virtual vault;
-- notes can be reopened after a page refresh;
-- the virtual vault exports to a documented archive containing readable Markdown and source files;
+- source, note, and instrument content remain separate in the virtual vault;
+- saved work can be reopened after a page refresh;
+- the virtual vault exports to a documented archive containing readable Markdown, source files, and review-state JSON;
 - an exported vault can be imported again;
 - the repository contains no secrets;
 - a clean build passes;
