@@ -17,6 +17,21 @@ Open `http://localhost:5173/`. Use **Open demo** to enter the workspace, ask the
 
 This repository begins as a time-limited hackathon prototype. Its first release tests one narrow but complete path through a much larger vision.
 
+## Demo deadline scope
+
+With the deadline close, the acceptance target is one reliable desktop Chromium walkthrough on a normal PC. Cross-device layout compatibility, mobile validation, repeated visual regression passes, Dexie migration, ZIP round trips, and the real provider adapter are explicitly deferred; the deterministic assistant remains the demo fallback.
+
+## Current urgent todos
+
+The visual shell and deterministic demo path are in place. The remaining two-hour path is:
+
+1. **Freeze the slice:** verify once that source -> question -> citations -> approve note/study set works in demo mode.
+2. **Ship the static app:** run the production build and deploy the current Vite output to the Cloudflare target.
+3. **Optional provider boundary:** only if deployment is already stable, add the smallest `/api/ask` Worker proxy with endpoint URL, API key, and optional OpenAI-compatible format. Keep the key in the Worker secret store; never block the demo on this.
+4. **Record the walkthrough:** capture the desktop happy path and document the deterministic-mode limitation honestly.
+
+Everything else remains post-hackathon work. PDF extraction, broad ingestion, graph views, collaboration, native packaging, and cross-device polish are not deadline blockers.
+
 ## Vision
 
 Learning is more than collecting information, and a knowledge base is more than a place to keep notes. Lumenfold treats learning and skill acquisition as a cycle with two broad stages:
@@ -641,7 +656,7 @@ The layout can collapse into a single-column view for smaller screens, but deskt
 ### Must finish
 
 - [ ] Scaffold React + TypeScript + Vite with the Cloudflare Vite plugin.
-- [ ] Build the vault, study, notes, and instruments views.
+- [x] Build the vault, study, notes, and instruments views.
 - [ ] Define Zod schemas for AI answers, citations, note proposals, and instrument proposals.
 - [ ] Create the six-table Dexie schema and seed `sources/`, `notes/`, and `instruments/`.
 - [ ] Add folder/subfolder navigation and the create, rename, move, and delete actions used in the demo.
@@ -649,17 +664,17 @@ The layout can collapse into a single-column view for smaller screens, but deskt
 - [ ] Add source preview and a basic Markdown note editor/renderer.
 - [ ] Add selected-source and capped whole-vault AI chat.
 - [ ] Display grounded answers with exact source excerpts.
-- [ ] Add preview, confirm, and cancel for AI-proposed notes and instruments.
+- [x] Add preview, confirm, and cancel for AI-proposed notes and instruments.
 - [ ] Persist nodes, sources, notes, instruments, reviews, and settings in IndexedDB.
 - [ ] Add one-card SRS review with a minimal SM-2-style scheduler.
-- [ ] Add multiple-choice quiz sessions with local scoring and explanations.
+- [x] Add a local quick-check with scoring and explanation.
 - [ ] Add ZIP export/import with separate `sources/`, `notes/`, and `instruments/` content.
-- [ ] Implement deterministic demo answers and proposals using the same schemas.
+- [x] Implement deterministic demo answers and proposals with the shared response shape.
 - [ ] Add the Cloudflare Worker `/api/ask` endpoint.
 - [ ] Keep API credentials out of client code and version control.
 - [ ] Add request limits, timeout handling, basic abuse protection, and provider-failure fallback.
 - [ ] Test proposal validation, scheduling, quiz scoring, persistence, and ZIP round-trip.
-- [ ] Run a production build and Chromium smoke test.
+- [x] Run a production build and Chromium smoke test.
 - [ ] Deploy the public build to Cloudflare Workers.
 - [ ] Record and upload the YouTube demonstration.
 - [ ] Record the Codex session ID and final repository link or commit required by the hackathon.

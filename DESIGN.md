@@ -3,7 +3,7 @@ name: Lumenfold
 description: A calm continuous-learning workspace with a bold, honest introduction.
 ---
 
-<!-- SEED: re-run $impeccable document once there's code to capture the actual tokens and components. -->
+<!-- TOKENS: captured from the alpha implementation on 2026-07-22. Keep this file in sync with src/styles.css. -->
 
 # Design System: Lumenfold
 
@@ -13,9 +13,9 @@ description: A calm continuous-learning workspace with a bold, honest introducti
 
 Lumenfold should feel like a precise personal instrument that becomes familiar through use. The workspace follows Obsidian Nord's balance of compact information, soft surfaces, friendly color, and quiet interaction. It practices silent competence: essential objects and actions remain visible, while the interface avoids narration, celebration, and interruption.
 
-The introduction uses the same visual language at a different intensity. It is cleaner, bolder, and more composed, drawing from Braun and Dieter Rams through honest product presentation, disciplined geometry, decisive spacing, and purposeful color. A large real workspace carries the first viewport, and one concrete inquiry demonstrates the continuing path from source to cited answer, accepted note, review, and connection.
+The introduction uses the same visual language at a different intensity. It is cleaner, bolder, and more composed, drawing from Braun and Dieter Rams through honest product presentation, disciplined geometry, decisive spacing, and mostly neutral surfaces. A large real workspace carries the first viewport, and the philosophy section gives the longer vision room to breathe before one concrete inquiry demonstrates the path from source to cited answer, accepted note, review, and connection.
 
-The MVP is desktop-first and responsive. Its three working regions collapse structurally on smaller screens rather than shrinking typography. Introduction motion may choreograph one source-to-note sequence; product motion communicates state only. Reduced-motion presentation must preserve the full narrative without animation.
+The deadline MVP targets a desktop Chromium walkthrough on a normal PC. The current CSS includes a responsive foundation for later work, but cross-device compatibility and mobile validation are outside this submission's acceptance criteria. Introduction motion may choreograph one source-to-note sequence; product motion communicates state only. Reduced-motion presentation must preserve the full narrative without animation.
 
 **Key Characteristics:**
 
@@ -28,31 +28,44 @@ The MVP is desktop-first and responsive. Its three working regions collapse stru
 
 ## Colors
 
-The palette combines Obsidian Nord dark's softened blue-gray atmosphere with Rosé Pine Dawn's gentler light surfaces. Exact OKLCH tokens will be resolved and contrast-tested during implementation.
+The workspace palette is implemented in OKLCH and follows the requested two-atmosphere model: Obsidian Nord's softened blue-gray dark theme and a readable Rosé Pine Dawn / AnuPpuccin-inspired light theme. The values below are the current source of truth in `src/styles.css`; they are palette anchors, not a claim of byte-for-byte theme compatibility.
 
-### Primary
+### Dark workspace: Nord-derived
 
-- **Polar Night** ([to be resolved during implementation]): the default dark canvas and the dominant field in the introduction hero.
-- **Learning Coral** ([to be resolved during implementation]): the brand anchor and primary command color, descended from Nord's warm red and orange family.
+- **Polar Night** `oklch(0.27 0.016 255)`: softened default canvas, close to Nord's `#2e3440` without the stronger blue cast.
+- **Surface** `oklch(0.32 0.018 255)`: pane and reading surface, close to Nord's `#3b4252`.
+- **Raised surface** `oklch(0.36 0.020 255)`: selected controls and proposal surfaces.
+- **Soft surface** `oklch(0.41 0.022 255)`: hover and skeleton fills, close to Nord's `#4c566a`.
+- **Snow ink** `oklch(0.95 0.006 255)`: near-neutral primary reading text, close to Nord's `#eceff4`.
+- **Learning Coral** `oklch(0.63 0.14 20)`: primary action and brand mark.
+- **Coral highlight** `oklch(0.76 0.10 45)`: readable eyebrow, hover, and secondary action text.
+- **Frost Blue** `oklch(0.76 0.10 210)`: selection, focus, navigation, and citations.
+- **Recall Gold** `oklch(0.83 0.13 90)`: review emphasis and H2.
+- **Connection Moss** `oklch(0.76 0.10 125)`: accepted state and H3.
+- **Reflective Plum** `oklch(0.68 0.09 330)`: links and H4.
+- **Quiet Teal** `oklch(0.75 0.08 180)`: supportive states and H5.
 
-### Secondary
+### Light workspace: Rosé Pine Dawn-derived
 
-- **Frost Blue** ([to be resolved during implementation]): selection, focus, navigation, citations, and grounded-source relationships.
-- **Quiet Teal** ([to be resolved during implementation]): supportive learning states and lower-rank Markdown hierarchy.
+- **Dawn Canvas** `oklch(0.965 0.025 70)`: a soft tinted base inspired by Rosé Pine Dawn `#faf4ed`.
+- **Dawn Surface** `oklch(0.985 0.020 70)`: source, note, and instrument reading surfaces.
+- **Raised surface** `oklch(0.925 0.035 70)`: pane separation and selected controls.
+- **Soft surface** `oklch(0.89 0.035 70)`: hover and skeleton fills.
+- **Quiet Ink** `oklch(0.38 0.060 300)`: Rose Pine-inspired purple ink, darkened for sustained reading contrast.
+- **Learning Coral** `oklch(0.58 0.14 10)`, **Frost Blue** `oklch(0.52 0.10 245)`, **Recall Gold** `oklch(0.70 0.15 75)`, **Connection Moss** `oklch(0.53 0.10 160)`, **Reflective Plum** `oklch(0.57 0.11 305)`, and **Quiet Teal** `oklch(0.60 0.09 190)`: darkened semantic counterparts that preserve the same heading and state roles.
 
-### Tertiary
+### Introduction palette
 
-- **Recall Gold** ([to be resolved during implementation]): review timing, emphasis, and the second Markdown heading rank.
-- **Connection Moss** ([to be resolved during implementation]): accepted notes, successful persistence, and the third Markdown heading rank.
-- **Reflective Plum** ([to be resolved during implementation]): note links and the fourth Markdown heading rank.
+The introduction is intentionally separate from the workspace palette. It uses a neutral Braun/Rams-like canvas so the story can be clean and bold without making the product itself feel cold or theatrical.
 
-### Neutral
+- Dark introduction: canvas `oklch(0.15 0.005 255)`, surface `oklch(0.20 0.007 255)`, ink `oklch(0.96 0.003 255)`, muted ink `oklch(0.84 0.006 255)`, metadata `oklch(0.78 0.008 255)`.
+- Light introduction: canvas `oklch(0.98 0 0)`, surface `oklch(0.95 0 0)`, ink `oklch(0.20 0 0)`, muted ink `oklch(0.36 0 0)`.
+- The light values are applied before the first paint with a layout effect, avoiding a dark-text-on-dark-canvas flash when a light theme is persisted.
 
-- **Snow Reading Surface** ([to be resolved during implementation]): the highest-clarity dark-theme text and document tone.
-- **Dawn Canvas** ([to be resolved during implementation]): the Rosé Pine-inspired light workspace background, soft without becoming cream or cold white.
-- **Dawn Surface** ([to be resolved during implementation]): light-theme source and note reading surfaces.
-- **Quiet Ink** ([to be resolved during implementation]): primary light-theme text with strong reading contrast.
-- **Structural Divider** ([to be resolved during implementation]): low-contrast boundaries between rails, panes, toolbars, and files.
+### Structural roles
+
+- **Structural divider** `oklch(0.41 0.018 255)` dark / `oklch(0.84 0.030 70)` light: low-contrast boundaries between rails, panes, toolbars, and files.
+- **Selection** `oklch(0.76 0.12 225 / 0.16)` dark / `oklch(0.52 0.10 245 / 0.13)` light: a supporting fill; labels and focus rings carry meaning as well.
 
 ### Named Rules
 

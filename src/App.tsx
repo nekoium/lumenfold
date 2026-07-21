@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -242,6 +242,68 @@ function IntroPage({ theme, onOpenDemo, onToggleTheme }: { theme: Theme; onOpenD
             prepare. You decide what deserves to stay.
           </p>
         </div>
+        <div className="philosophy-essays">
+          <article className="philosophy-row">
+            <div className="philosophy-index">01 / Collection</div>
+            <div>
+              <h3>Begin with the world as it is.</h3>
+              <p>
+                Learning starts with material that has a place and a history: an article, a
+                conversation, a question, a problem you are trying to solve. Lumenfold keeps the
+                source close instead of flattening it into a detached answer.
+              </p>
+              <p>
+                A source is not a task to clear. It is a relationship to return to, with context
+                intact when the next question arrives.
+              </p>
+            </div>
+          </article>
+          <article className="philosophy-row">
+            <div className="philosophy-index">02 / Internalization</div>
+            <div>
+              <h3>Understanding is what you can bring back.</h3>
+              <p>
+                Notes are not a second inbox. They are the explanations, distinctions, examples,
+                and questions that have become yours. Distilling a source asks what it means in
+                your language and what it changes in the way you see a subject.
+              </p>
+              <p>
+                Review and retrieval make that understanding available away from the original
+                page, when it can actually guide a decision or a new piece of work.
+              </p>
+            </div>
+          </article>
+          <article className="philosophy-row">
+            <div className="philosophy-index">03 / Continuity</div>
+            <div>
+              <h3>Every answer can become a better next question.</h3>
+              <p>
+                Lumenfold treats learning as a continuing loop: collect and organize, distill and
+                understand, revisit and connect, then plan what deserves attention next. The loop
+                is allowed to change shape as your interests and projects change.
+              </p>
+              <p>
+                Instruments give the loop somewhere to go: a prompt, a study set, a review, or a
+                small experiment that turns an idea into practice.
+              </p>
+            </div>
+          </article>
+          <article className="philosophy-row">
+            <div className="philosophy-index">04 / Agency</div>
+            <div>
+              <h3>Let assistance reduce friction, not authorship.</h3>
+              <p>
+                The assistant can search, summarize, sort, capture references, design questions,
+                and prepare reusable instruments. It can make the next step easier to see without
+                deciding what should become part of your durable understanding.
+              </p>
+              <p>
+                Every lasting change is proposed with its source and preview. You approve what
+                stays, and the vault remains readable, portable, and yours.
+              </p>
+            </div>
+          </article>
+        </div>
         <div className="learning-sequence" aria-label="Lumenfold learning sequence">
           <div className="sequence-step"><span>01</span><strong>Collect</strong><p>Keep the original source and its context.</p></div>
           <div className="sequence-step"><span>02</span><strong>Distill</strong><p>Turn useful material into an explanation.</p></div>
@@ -401,6 +463,12 @@ function WorkspacePage({
         </div>
       </header>
 
+      <nav className="mobile-view-switcher" aria-label="Workspace views">
+        <button className={view === "source" ? "is-active" : ""} type="button" onClick={() => setView("source")}><BookOpen size={15} /> Study desk</button>
+        <button className={view === "notes" ? "is-active" : ""} type="button" onClick={() => setView("notes")}><FileText size={15} /> Notes <span>{state.notes.length || ""}</span></button>
+        <button className={view === "instruments" ? "is-active" : ""} type="button" onClick={() => setView("instruments")}><Layers3 size={15} /> Instruments <span>{state.studySets.length || ""}</span></button>
+      </nav>
+
       <div className="workspace-grid">
         <aside className="vault-rail">
           <div className="rail-heading"><div className="workspace-brand"><BrandMark /><span>Vault</span></div><IconButton label="Collapse vault rail" disabled><Menu size={16} /></IconButton></div>
@@ -520,7 +588,17 @@ function NotesView({ notes, selectedNote, onSelect, onBackToSource }: { notes: N
 }
 
 function InstrumentsView({ studySets, selectedSet, onSelect, onBackToSource }: { studySets: StudySet[]; selectedSet?: StudySet; onSelect: (id: string) => void; onBackToSource: () => void }) {
-  return <div className="collection-view"><div className="document-toolbar"><div><p className="eyebrow">Instruments</p><h1>Ways to keep going</h1><span className="document-path">Reviews, prompts, and practice scaffolds</span></div><button className="quiet-button" type="button" onClick={onBackToSource}><ArrowLeft size={16} /> Back to source</button></div>{selectedSet ? <article className="instrument-reading"><div className="note-header"><span className="kind-label">Study set</span><span>{selectedSet.cards.length} retrieval cards</span></div><h2>{selectedSet.title}</h2><p className="reading-lede">A small practice set generated from the selected source. Try to answer before revealing the back.</p><div className="card-list">{selectedSet.cards.map((card, index) => <div className="practice-card" key={card.prompt}><span>0{index + 1}</span><div><strong>{card.prompt}</strong><p>{card.answer}</p></div></div>)}</div><div className="quiz-preview"><div><ListChecks size={16} /><strong>Quick check</strong></div><p>{selectedSet.questions[0]?.prompt}</p><span className="quiz-option">{selectedSet.questions[0]?.options[1]}</span></div></article> : studySets.length ? <div className="collection-list">{studySets.map((studySet) => <button className="collection-item" type="button" key={studySet.id} onClick={() => onSelect(studySet.id)}><span className="collection-item-icon instrument"><ListChecks size={17} /></span><span><strong>{studySet.title}</strong><small>{studySet.cards.length} cards - {readableDate(studySet.createdAt)}</small></span><ChevronRight size={16} /></button>)}</div> : <EmptyView icon={<ListChecks size={20} />} title="Practice will live here" copy="Ask for a study set from any source and approve the prompts you want to revisit." onAction={onBackToSource} action="Return to the source" />}</div>;
+  const [revealedCard, setRevealedCard] = useState<number | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+
+  useEffect(() => {
+    setRevealedCard(null);
+    setSelectedAnswer(null);
+  }, [selectedSet?.id]);
+
+  const question = selectedSet?.questions[0];
+
+  return <div className="collection-view"><div className="document-toolbar"><div><p className="eyebrow">Instruments</p><h1>Ways to keep going</h1><span className="document-path">Reviews, prompts, and practice scaffolds</span></div><button className="quiet-button" type="button" onClick={onBackToSource}><ArrowLeft size={16} /> Back to source</button></div>{selectedSet ? <article className="instrument-reading"><div className="note-header"><span className="kind-label">Study set</span><span>{selectedSet.cards.length} retrieval cards</span></div><h2>{selectedSet.title}</h2><p className="reading-lede">Try to answer each prompt before revealing the back. The effort is the practice.</p><div className="card-list">{selectedSet.cards.map((card, index) => <button className={`practice-card${revealedCard === index ? " is-revealed" : ""}`} type="button" key={card.prompt} onClick={() => setRevealedCard(revealedCard === index ? null : index)} aria-expanded={revealedCard === index}><span>0{index + 1}</span><span className="practice-card-copy"><strong>{card.prompt}</strong>{revealedCard === index ? <span className="practice-answer">{card.answer}</span> : <span className="practice-hint">Reveal answer</span>}</span><ChevronRight size={15} /></button>)}</div>{question ? <div className="quiz-preview"><div><ListChecks size={16} /><strong>Quick check</strong></div><p>{question.prompt}</p><div className="quiz-options" role="radiogroup" aria-label="Quiz answers">{question.options.map((option, index) => <button className={`quiz-option${selectedAnswer === index ? (index === question.answer ? " is-correct" : " is-incorrect") : ""}`} type="button" role="radio" aria-checked={selectedAnswer === index} key={option} onClick={() => setSelectedAnswer(index)}>{option}</button>)}</div>{selectedAnswer !== null ? <p className={`quiz-feedback${selectedAnswer === question.answer ? " is-correct" : " is-incorrect"}`}>{selectedAnswer === question.answer ? "Correct. You produced the idea before checking." : `Not quite. The answer is: ${question.options[question.answer]}`}</p> : <span className="quiz-hint">Choose an answer to see the explanation.</span>}</div> : null}</article> : studySets.length ? <div className="collection-list">{studySets.map((studySet) => <button className="collection-item" type="button" key={studySet.id} onClick={() => onSelect(studySet.id)}><span className="collection-item-icon instrument"><ListChecks size={17} /></span><span><strong>{studySet.title}</strong><small>{studySet.cards.length} cards - {readableDate(studySet.createdAt)}</small></span><ChevronRight size={16} /></button>)}</div> : <EmptyView icon={<ListChecks size={20} />} title="Practice will live here" copy="Ask for a study set from any source and approve the prompts you want to revisit." onAction={onBackToSource} action="Return to the source" />}</div>;
 }
 
 function EmptyView({ icon, title, copy, onAction, action }: { icon: ReactNode; title: string; copy: string; onAction: () => void; action: string }) {
@@ -535,9 +613,12 @@ export default function App() {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
 
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = state.theme;
+  }, [state.theme]);
+
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    document.documentElement.dataset.theme = state.theme;
   }, [state]);
 
   function openDemo() {
