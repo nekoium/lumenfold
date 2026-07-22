@@ -17,6 +17,74 @@ Open `http://localhost:5173/`. Use **Open demo** to enter the workspace, ask the
 
 This repository begins as a time-limited hackathon prototype. Its first release tests one narrow but complete path through a much larger vision.
 
+## Setup and demo guide
+
+### Requirements
+
+- A recent Node.js LTS release
+- npm
+- A desktop Chromium-based browser for the intended demo walkthrough
+
+### Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173/` and choose **Open demo**. The app does not need an API key: the deterministic assistant keeps the workflow reproducible offline.
+
+The app includes a seeded retrieval-practice source in `src/App.tsx`, so no fixture download is required.
+
+To use your own sample, open **Import file** and choose a UTF-8 `.md`, `.markdown`, or `.txt` file. You can also use **Add source** to paste text directly.
+
+The recommended walkthrough is:
+
+1. Open the seeded source or import a text file.
+2. Ask a question in the assistant panel.
+3. Inspect the answer and its exact source excerpts.
+4. Approve a proposed Markdown note or study instrument.
+5. Open **Notes** to edit the Markdown note and save it locally.
+
+The virtual vault is stored in browser `localStorage`. To reset the demo, clear site data for `localhost:5173` in the browser and reload the page.
+
+For a production check, run:
+
+```bash
+npm run build
+npm run preview
+```
+
+The build runs TypeScript checking before creating the Vite output. Cloudflare Worker deployment files are included for the planned static deployment, but the local alpha does not depend on a Worker or external provider.
+
+## Implementation and AI collaboration
+
+### Key decisions
+
+- **One complete slice:** source -> question -> citations -> approved note or instrument. This kept the demo understandable and reliable under the hackathon deadline.
+- **Three durable domains:** `sources/`, `notes/`, and `instruments/` have distinct responsibilities without becoming isolated silos.
+- **Approval before writing:** the assistant proposes Markdown changes; the learner previews and approves them before they become durable state.
+- **Deterministic fallback:** the alpha uses a typed, source-grounded demo adapter so the core interaction works without network access or credentials.
+- **Portable direction:** Markdown remains the intended durable format. Browser storage is only the current prototype persistence layer; provider secrets belong in a future server-side or local credential store.
+
+### How GPT-5.6 helped
+
+GPT-5.6 was used for product reasoning and design exploration. It helped clarify the continuous-learning workflow and compare the introduction and workspace surfaces.
+
+It also helped shape the source/note/instrument model and define the assistant's proposal and approval boundary.
+
+It also helped turn feedback into explicit decisions about the Nord-inspired themes, restrained product color, local-first direction, and the MVP's deadline scope.
+
+### Where Codex accelerated the work
+
+Codex worked directly in the repository as the implementation partner. It inspected the existing README and design context, then edited the React and TypeScript files.
+
+It implemented the intro and workspace views, added source import and Markdown note editing, and kept `DESIGN.md` and this README aligned with the code.
+
+Codex also ran the production build and diff checks after the final changes. This shortened the loop from feedback to working code and made it possible to ship a coherent alpha instead of a collection of disconnected screens.
+
+The current division is intentional: GPT-5.6 helped decide what the product should mean and how its boundaries should work; Codex translated those decisions into tested repository changes.
+
 ## Demo deadline scope
 
 With the deadline close, the acceptance target is one reliable desktop Chromium walkthrough on a normal PC. Cross-device layout compatibility, mobile validation, repeated visual regression passes, Dexie migration, ZIP round trips, and the real provider adapter are explicitly deferred; the deterministic assistant remains the demo fallback.
